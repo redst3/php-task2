@@ -1,4 +1,77 @@
-# Homework assignment
+# Homework assignment(Code refactoring)
+
+## Original code
+
+```
+<?php
+
+foreach (explode("\n", file_get_contents($argv[1])) as $row) {
+
+    if (empty($row)) break;
+    $p = explode(",",$row);
+    $p2 = explode(':', $p[0]);
+    $value[0] = trim($p2[1], '"');
+    $p2 = explode(':', $p[1]);
+    $value[1] = trim($p2[1], '"');
+    $p2 = explode(':', $p[2]);
+    $value[2] = trim($p2[1], '"}');
+
+    $binResults = file_get_contents('https://lookup.binlist.net/' .$value[0]);
+    if (!$binResults)
+        die('error!');
+    $r = json_decode($binResults);
+    $isEu = isEu($r->country->alpha2);
+
+    $rate = @json_decode(file_get_contents('https://api.exchangeratesapi.io/latest'), true)['rates'][$value[2]];
+    if ($value[2] == 'EUR' or $rate == 0) {
+        $amntFixed = $value[1];
+    }
+    if ($value[2] != 'EUR' or $rate > 0) {
+        $amntFixed = $value[1] / $rate;
+    }
+
+    echo $amntFixed * ($isEu == 'yes' ? 0.01 : 0.02);
+    print "\n";
+}
+
+function isEu($c) {
+    $result = false;
+    switch($c) {
+        case 'AT':
+        case 'BE':
+        case 'BG':
+        case 'CY':
+        case 'CZ':
+        case 'DE':
+        case 'DK':
+        case 'EE':
+        case 'ES':
+        case 'FI':
+        case 'FR':
+        case 'GR':
+        case 'HR':
+        case 'HU':
+        case 'IE':
+        case 'IT':
+        case 'LT':
+        case 'LU':
+        case 'LV':
+        case 'MT':
+        case 'NL':
+        case 'PO':
+        case 'PT':
+        case 'RO':
+        case 'SE':
+        case 'SI':
+        case 'SK':
+            $result = 'yes';
+            return $result;
+        default:
+            $result = 'no';
+    }
+    return $result;
+}
+```
 
 ## Before running the script
 
@@ -15,28 +88,12 @@ PHP version used for the project `7.4.9`
     php script.php or php script.php <path-to-file>
 ```
 
-If no path to file is provided, script will get the default file found in `src\Data\input.csv`. All Commissions will be sorted by client id and fees will be calculated for each commission.
-
-### Deposit rule
-
-All deposits are charged 0.03% of deposit amount.
-
-### Withdraw rules
-
-There are different calculation rules for `withdraw` of `private` and `business` clients.
-
-**Private Clients**
-
-- Commission fee - 0.3% from withdrawn amount.
-- 1000.00 EUR for a week (from Monday to Sunday) is free of charge. Only for the first 3 withdraw operations per a week. 4th and the following operations are calculated by using the rule above (0.3%). If total free of charge amount is exceeded them commission is calculated only for the exceeded amount (i.e. up to 1000.00 EUR no commission fee is applied).
-
-**Business Clients**
-
-- Commission fee - 0.5% from withdrawn amount.
+If no path to file is provided, script will get the default file found in `src\Data\input.txt`.
 
 ## Results
 
-Output of calculated commission fees for each operation.
+- Using BIN number to figure out if the commission is in Europe
+- Calculate commission rates in EUR currency and output them
 
 ## Testing
 
