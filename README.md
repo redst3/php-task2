@@ -2,7 +2,7 @@
 
 ## Original code
 
-```
+```php
 <?php
 
 foreach (explode("\n", file_get_contents($argv[1])) as $row) {
