@@ -37,7 +37,8 @@ class Operation{
         $this->european = true;
     }
 
-    public function findExchangeRate(): void {
+    // using different api for exchange rates, because previous one needed api key, which I didn't have
+    public function findExchangeRate(): float {
         $rateJson = json_decode(
             file_get_contents('https://developers.paysera.com/tasks/api/currency-exchange-rates')
         );
@@ -50,9 +51,9 @@ class Operation{
                 }
             }
         }
-        $this->calculateAndPrintFee();
+       return $this->calculateAndPrintFee();
     }
-    private function calculateAndPrintFee(): void {
+    private function calculateAndPrintFee(): float {
         $feeAmount = $this->amount / $this->exchangeRate;
         if($this->european){
             $fee = $feeAmount * self::EUROPEAN_RATE;
@@ -62,8 +63,10 @@ class Operation{
         $roundedFee = round($fee, 2);
         if($roundedFee < $fee){
             echo $roundedFee + 0.01 . "\n";
+            return $roundedFee + 0.01;
         } else {
             echo $roundedFee . "\n";
+            return $roundedFee;
         }
     }
 }
